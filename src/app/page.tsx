@@ -4,10 +4,9 @@ import { MODE } from '@/lib/config';
 import { getFirstSite } from '@/lib/sites';
 import { homeSite, rootUrl } from '@/lib/home';
 import { shareMetadata } from '@/lib/meta';
-import { siteAttrs } from '@/lib/templates';
 import { PRO, rupiah } from '@/lib/plans';
 import SiteView from '@/components/SiteView';
-import PromoPopup from '@/components/PromoPopup';
+import HomeShowcase from '@/components/HomeShowcase';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,13 +29,5 @@ export default async function Page() {
   }
 
   const site = await homeSite();
-  return (
-    <>
-      {/* plan "pro" menyembunyikan tanda "Dibuat dengan julexbz.com": ini situs milik julexbz sendiri */}
-      <SiteView content={site.content} plan="pro" rootUrl={rootUrl()} />
-      <div className="site promo-host" {...siteAttrs(site.content)}>
-        <PromoPopup href="/mulai" price={`${rupiah(PRO.amount)} / tahun`} was={rupiah(PRO.listAmount)} />
-      </div>
-    </>
-  );
+  return <HomeShowcase content={site.content} rootUrl={rootUrl()} href="/mulai" price={`${rupiah(PRO.amount)} / tahun`} was={rupiah(PRO.listAmount)} />;
 }

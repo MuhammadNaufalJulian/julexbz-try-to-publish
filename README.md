@@ -18,6 +18,8 @@ Isi situs disimpan di Postgres dan diedit dari `/dashboard` (login), tanpa deplo
 - Pembayaran QRIS lewat Midtrans: Simpan, bayar, situs terbit otomatis, plus voucher diskon (lihat bagian Pembayaran)
 
 
+Beranda julexbz.com berganti template tiap 1 detik (komponen `HomeShowcase`) supaya pengunjung melihat semua tampilan. Di popup tawaran, klik template atau warna untuk menghentikan pergantian dan mencobanya; tombol "Jeda" ada di pojok kiri bawah saat popup tertutup. Pilihan pengunjung hanya berlaku di layar mereka dan tidak disimpan. Pengguna dengan pengaturan "kurangi gerakan" tidak mendapat pergantian otomatis.
+
 Foto bawaan beranda: `public/owner.jpg` (juga ditanam di `src/lib/ownerPhoto.ts` untuk gambar pratinjau link). Dipakai di kartu lanyard, CV, dan pratinjau julexbz.com selama situs pemilik belum punya foto. Foto yang diunggah lewat dashboard otomatis menggantikannya. Untuk mengganti foto bawaan, timpa `public/owner.jpg` lalu perbarui `ownerPhoto.ts`.
 
 ## Template, CV, dan tautan kartu
