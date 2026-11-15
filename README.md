@@ -17,9 +17,12 @@ Isi situs disimpan di Postgres dan diedit dari `/dashboard` (login), tanpa deplo
 - Pembatas percobaan login, pendaftaran, unggah foto, dan simpan
 - Pembayaran QRIS lewat Midtrans: Simpan, bayar, situs terbit otomatis, plus voucher diskon (lihat bagian Pembayaran)
 
+
+Foto bawaan beranda: `public/owner.jpg` (juga ditanam di `src/lib/ownerPhoto.ts` untuk gambar pratinjau link). Dipakai di kartu lanyard, CV, dan pratinjau julexbz.com selama situs pemilik belum punya foto. Foto yang diunggah lewat dashboard otomatis menggantikannya. Untuk mengganti foto bawaan, timpa `public/owner.jpg` lalu perbarui `ownerPhoto.ts`.
+
 ## Template, CV, dan tautan kartu
 
-- **5 template** (tab Template di dashboard): Klasik, Cerah (latar putih), Pop (kuning mencolok), Neon (gelap, hijau lemon) dan Gradasi. Klasik dan Cerah bisa ganti warna utama; tiga lainnya punya palet tetap.
+- **11 template** (tab Template di dashboard): Klasik, Cerah (latar putih), Pop (kuning mencolok), Neon (gelap, hijau lemon), Gradasi, dan enam yang playful: Permen (pastel, serba bulat), Stiker (kertas krem, chip miring), Arcade (gaya game retro), Boba (krem susu dan cokelat teh), Komik (halftone, bubble ucapan) dan Awan (langit biru). Klasik dan Cerah bisa ganti warna utama; yang lain punya palet tetap.
 - **Tautan kartu**: `nama.julexbz.com/kartu` menampilkan kartu 3D saja, dengan tombol Simpan kontak, Bagikan (Web Share, cadangan salin tautan) dan Lihat CV.
 - **Simpan kontak**: `/kontak.vcf` (vCard 3.0) langsung masuk buku kontak HP.
 - **Pratinjau tautan**: `/og` membuat gambar 1200x630 otomatis untuk WhatsApp, Telegram, dan X.
@@ -116,6 +119,10 @@ Catatan: QR dari Midtrans berlaku singkat (sekitar belasan menit). Jika kedaluwa
 
 Voucher dibuat lewat skrip, tanpa SQL. Jalankan dari folder proyek (butuh `DATABASE_URL` di `.env`):
 
+**Cara termudah: halaman admin.** Login dengan email yang ada di `ADMIN_EMAILS` (kalau kosong, memakai `FREE_EMAILS`), lalu buka `https://julexbz.com/admin/voucher` atau tombol **Voucher** di dashboard. Di sana kamu bisa membuat satu atau banyak kode acak sekaligus (misalnya 5 kode diskon 80% untuk teman, kuota 1 per kode), memilih diskon persen, potongan rupiah, atau percobaan gratis, lalu menyalin kode atau tautan `/bayar?voucher=KODE`. Tabel di bawahnya menampilkan pemakaian dan tombol Matikan/Nyalakan. Halaman ini 404 untuk selain admin.
+
+Cara lewat terminal (opsional):
+
 ```bash
 # 20% untuk 50 orang pertama, berlaku 30 hari
 node --env-file=.env scripts/voucher.mjs buat PROMO20 persen 20 50 30
@@ -126,6 +133,9 @@ node --env-file=.env scripts/voucher.mjs buat HEMAT50K rupiah 50000
 # gratis penuh untuk 5 orang (misalnya hadiah atau teman)
 node --env-file=.env scripts/voucher.mjs buat GRATIS100 persen 100 5
 
+# percobaan gratis 7 hari: situs terbit, setelah 7 hari berhenti tampil sampai pelanggan membayar
+# (sekali per pengguna, tanpa masa tenggang)
+node --env-file=.env scripts/voucher.mjs buat TRIAL7 trial 7 100 30
 node --env-file=.env scripts/voucher.mjs daftar          # lihat semua voucher dan pemakaiannya
 node --env-file=.env scripts/voucher.mjs matikan PROMO20  # hentikan promo
 node --env-file=.env scripts/voucher.mjs nyalakan PROMO20

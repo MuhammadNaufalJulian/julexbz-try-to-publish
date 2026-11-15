@@ -18,6 +18,7 @@ type Props = {
   email: string;
   live: boolean;
   expiresAt: string | null;
+  admin?: boolean;
 };
 
 const TABS = [
@@ -93,7 +94,7 @@ function move<T>(arr: T[], i: number, d: number) {
   [arr[i], arr[j]] = [arr[j], arr[i]];
 }
 
-export default function Editor({ initial, slug: initialSlug, plan, publicUrl, rootUrl, single, email, live, expiresAt }: Props) {
+export default function Editor({ initial, slug: initialSlug, plan, publicUrl, rootUrl, single, email, live, expiresAt, admin }: Props) {
   const [c, setC] = useState<Content>(initial);
   const [saved, setSaved] = useState(() => JSON.stringify(initial));
   const [slug, setSlug] = useState(initialSlug);
@@ -192,6 +193,7 @@ export default function Editor({ initial, slug: initialSlug, plan, publicUrl, ro
         <header className="ed-top">
           <strong>Dashboard</strong>
           <span className="pill">{plan}</span>
+          {admin ? <a className="btn" href="/admin/voucher">Voucher</a> : null}
           {live ? <a className="btn" href={livePublicUrl} target="_blank" rel="noopener noreferrer">Buka situs</a> : null}
           <button type="button" className="btn primary" disabled={!dirty || saving} onClick={save}>Simpan</button>
           <form action={logout}>
@@ -207,8 +209,10 @@ export default function Editor({ initial, slug: initialSlug, plan, publicUrl, ro
         ) : null}
         {!single && live && daysLeft !== null && daysLeft <= 30 ? (
           <div className="banner" role="status">
-            <span>{daysLeft > 0 ? `Langganan berakhir ${daysLeft} hari lagi.` : 'Langganan sudah berakhir. Situs akan berhenti tampil setelah masa tenggang 3 hari.'}</span>
-            <a className="btn sm primary" href="/bayar">Perpanjang</a>
+            <span>{plan === 'trial'
+              ? (daysLeft > 0 ? `Masa percobaan berakhir ${daysLeft} hari lagi. Bayar supaya situs tetap tampil.` : 'Masa percobaan sudah berakhir. Bayar supaya situs tampil lagi.')
+              : (daysLeft > 0 ? `Langganan berakhir ${daysLeft} hari lagi.` : 'Langganan sudah berakhir. Situs akan berhenti tampil setelah masa tenggang 3 hari.')}</span>
+            <a className="btn sm primary" href="/bayar">{plan === 'trial' ? 'Bayar sekarang' : 'Perpanjang'}</a>
           </div>
         ) : null}
         <div className="ed-switch">

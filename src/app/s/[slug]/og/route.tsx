@@ -2,6 +2,8 @@ import { ImageResponse } from 'next/og';
 import { getPhoto } from '@/lib/sites';
 import { getSiteForSlug } from '@/lib/home';
 import { ogPalette } from '@/lib/templates';
+import { OWNER_PHOTO } from '@/lib/photo';
+import { OWNER_PHOTO_JPEG_BASE64 } from '@/lib/ownerPhoto';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +22,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }
 
   // satori hanya mendukung JPEG dan PNG. Unggahan dari dashboard selalu JPEG.
   let photo: string | null = null;
-  if (c.photoId) {
+  if (c.photoId === OWNER_PHOTO) {
+    photo = `data:image/jpeg;base64,${OWNER_PHOTO_JPEG_BASE64}`;
+  } else if (c.photoId) {
     const p = await getPhoto(c.photoId);
     if (p && (p.mime === 'image/jpeg' || p.mime === 'image/png')) photo = `data:${p.mime};base64,${p.data}`;
   }

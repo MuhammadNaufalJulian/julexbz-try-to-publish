@@ -24,3 +24,15 @@ export function homeSlug(): string | null {
   const v = (process.env.HOME_SLUG || '').trim().toLowerCase();
   return /^[a-z0-9-]{3,30}$/.test(v) ? v : null;
 }
+
+// Email admin yang boleh membuat voucher di /admin/voucher. Isi ADMIN_EMAILS (pisahkan koma).
+// Kalau kosong, memakai FREE_EMAILS. Lebih aman diisi sendiri supaya akun gratis lain tidak otomatis jadi admin.
+export function adminEmails(): string[] {
+  const own = (process.env.ADMIN_EMAILS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+  return own.length ? own : freeEmails();
+}
+
+export function isAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return adminEmails().includes(email.trim().toLowerCase());
+}

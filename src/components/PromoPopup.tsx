@@ -49,7 +49,7 @@ export default function PromoPopup({ href, price, was }: { href: string; price: 
         {THEMES.map((t) => (
           <i key={t.id} style={{ background: t.swatch }} title={t.label} />
         ))}
-        <span>5 template, 6 warna</span>
+        <span>{TEMPLATES.length} template, 6 warna</span>
       </p>
       <p id="promo-d">Kartu 3D, situs, dan CV dalam satu alamat namamu.julexbz.com. Terbit otomatis setelah bayar QRIS, <s className="was">{was}</s> <strong>{price}</strong>.</p>
       <div className="promo-act">

@@ -96,3 +96,10 @@ test('normalizeStored: data rusak jatuh ke isi bawaan', () => {
   const c = normalizeStored({ theme: 'x' }, 'Cadangan');
   assert.equal(c.name, 'Cadangan');
 });
+
+import { photoSrc, OWNER_PHOTO } from '../src/lib/photo.ts';
+
+test('photoSrc: foto bawaan pemilik dan foto unggahan', () => {
+  assert.equal(photoSrc(OWNER_PHOTO), '/owner.jpg');
+  assert.equal(photoSrc('0b1c2d3e-0000-4000-8000-000000000001'), '/api/photo/0b1c2d3e-0000-4000-8000-000000000001');
+});

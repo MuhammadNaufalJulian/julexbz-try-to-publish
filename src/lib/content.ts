@@ -5,7 +5,7 @@ export const THEME_IDS = ['cobalt', 'emerald', 'sunset', 'violet', 'rose', 'grap
 export type ThemeId = (typeof THEME_IDS)[number];
 
 // Template = tampilan lengkap situs (warna dasar, huruf, gaya komponen). Tema = warna aksen untuk template yang mengizinkannya.
-export const TEMPLATE_IDS = ['klasik', 'cerah', 'pop', 'neon', 'gradasi'] as const;
+export const TEMPLATE_IDS = ['klasik', 'cerah', 'pop', 'neon', 'gradasi', 'permen', 'stiker', 'arcade', 'boba', 'komik', 'awan'] as const;
 export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 export const CV_STYLES = ['ringkas', 'modern'] as const;
