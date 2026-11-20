@@ -16,7 +16,7 @@ type Row = { id: string; user_id: string; slug: string; plan: string; published:
 // Paket yang sudah lewat masa berlaku dianggap kembali ke gratis. Situs berbayar yang kedaluwarsa lebih dari 3 hari
 // (masa tenggang) berhenti tampil sampai diperpanjang. Situs tanpa tanggal kedaluwarsa tidak terpengaruh.
 const COLS = `id, user_id, slug, content, plan_expires_at,
-  (published and (plan_expires_at is null or plan_expires_at + (case when plan = 'trial' then interval '0' else interval '3 days' end) >= now())) as published,
+  (published and (plan_expires_at is null or plan_expires_at + interval '3 days' >= now())) as published,
   case when plan_expires_at is not null and plan_expires_at < now() then 'free' else plan end as plan`;
 
 function toSite(r: Row): Site {

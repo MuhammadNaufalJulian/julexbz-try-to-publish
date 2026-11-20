@@ -3,8 +3,7 @@ import { defaultContent, type Content } from './content.ts';
 // Isi bawaan situs pemilik (Muhammad Naufal Julian). Dipakai di beranda julexbz.com selama situs pemilik belum
 // dibuat di dashboard, dan sebagai isi awal dashboard saat email di FREE_EMAILS pertama kali membuat situs.
 // Disusun dari dua ringkasan AI yang saling berbeda di beberapa hal. Bagian yang tidak cocok atau belum
-// dikonfirmasi sengaja dikosongkan (kota, periode kerja, toko online). Email, telepon, tautan GitHub, LinkedIn,
-// Instagram, dan sertifikat sudah dikonfirmasi pemilik.
+// dikonfirmasi sengaja dikosongkan (kota, email, telepon, periode kerja, sertifikasi, toko online).
 export function ownerContent(): Content {
   const c = defaultContent('Muhammad Naufal Julian');
   c.template = 'klasik';
@@ -39,18 +38,15 @@ export function ownerContent(): Content {
     { role: 'Founder & Independent Digital Product Builder', org: 'JulexBZ', period: '2026 - sekarang', desc: 'Membangun JulexBZ sebagai ekosistem website, aplikasi, dan produk digital, dari layanan untuk UMKM sampai platform produk digital.' },
     { role: 'Guru / Tenaga Pendidik', org: 'TKIF Al-Fikri', period: '', desc: 'Bekerja di lingkungan pendidikan taman kanak-kanak sambil menempuh pendidikan tinggi di bidang Teknik Informatika.' },
   ];
-  c.education = [
-    { school: 'Universitas Indraprasta PGRI (UNINDRA)', degree: 'S1 Teknik Informatika', period: 'Target lulus 2027', desc: '' },
-    { school: 'CodePolitan', degree: 'Sertifikat Belajar JavaScript, JavaScript DOM, Bootstrap, Dasar CSS, dan Dasar HTML', period: '2023 - 2024', desc: 'Lima sertifikat kelas web development dengan ID kredensial yang bisa diperiksa di codepolitan.com/c/.' },
-    { school: 'LinkedIn Learning', degree: 'Sertifikat Generative AI dan Microsoft Copilot', period: '2024', desc: 'Ethics in the Age of Generative AI, Learning Microsoft 365 Copilot, dan tiga kursus Generative AI dan Copilot lainnya.' },
-  ];
+  c.education = [{ school: 'Universitas Indraprasta PGRI (UNINDRA)', degree: 'S1 Teknik Informatika', period: 'Target lulus 2027', desc: '' }];
   c.contact = {
-    email: 'muhamadnaufal210@gmail.com',
-    phone: '+62 896-2804-7497',
+    email: '',
+    phone: '',
     links: [
-      { label: 'GitHub', url: 'https://github.com/MuhammadNaufalJulian' },
-      { label: 'LinkedIn', url: 'https://www.linkedin.com/in/muhammad-julian-8a5845294/' },
+      { label: 'GitHub', url: 'https://github.com/julexbz' },
+      { label: 'LinkedIn', url: 'https://linkedin.com/in/muhamadnaufal' },
       { label: 'Instagram', url: 'https://instagram.com/julexbz' },
+      { label: 'TikTok', url: 'https://tiktok.com/@julexbz' },
       { label: 'DIGIBO', url: 'https://digibo.julexbz.com' },
       { label: 'DigiProd', url: 'https://digiprod.julexbz.com' },
     ],

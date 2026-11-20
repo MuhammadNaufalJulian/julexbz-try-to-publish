@@ -13,8 +13,8 @@ function toOrder(r: Row): Order {
   return { id: r.id, userId: r.user_id, siteId: r.site_id, plan: r.plan, amount: r.amount, status: r.status as OrderStatus, qrUrl: r.qr_url, voucherCode: r.voucher_code };
 }
 
-export async function createOrder(id: string, userId: string, siteId: string, amount: number, voucherCode: string | null = null, discount = 0, plan: string = PRO.id): Promise<void> {
-  await q('insert into orders (id, user_id, site_id, plan, amount, voucher_code, discount) values ($1, $2, $3, $4, $5, $6, $7)', [id, userId, siteId, plan, amount, voucherCode, discount]);
+export async function createOrder(id: string, userId: string, siteId: string, amount: number, voucherCode: string | null = null, discount = 0): Promise<void> {
+  await q('insert into orders (id, user_id, site_id, plan, amount, voucher_code, discount) values ($1, $2, $3, $4, $5, $6, $7)', [id, userId, siteId, PRO.id, amount, voucherCode, discount]);
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
@@ -53,15 +53,13 @@ export const SETTLE_SQL = `
     update vouchers set used = used + 1 where code = (select voucher_code from o) returning 1
   )
   update sites s set plan = o.plan, published = true,
-    plan_expires_at = case when o.plan = 'trial' then now() + make_interval(days => $3)
-      else greatest(coalesce(s.plan_expires_at, now()), now()) + make_interval(months => $2) end,
+    plan_expires_at = greatest(coalesce(s.plan_expires_at, now()), now()) + make_interval(months => $2),
     updated_at = now()
   from o where s.id = o.site_id
   returning s.id`;
 
-// trialDays hanya dipakai pesanan berjenis trial. Pesanan lain mengabaikannya.
-export async function settleOrder(id: string, trialDays = 0): Promise<boolean> {
-  const rows = await q(SETTLE_SQL, [id, PRO.months, trialDays]);
+export async function settleOrder(id: string): Promise<boolean> {
+  const rows = await q(SETTLE_SQL, [id, PRO.months]);
   return rows.length > 0;
 }
 

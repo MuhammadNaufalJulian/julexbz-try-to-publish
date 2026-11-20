@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PointerEvent as RPointerEvent } from 'react';
 import { safeUrl, type Content } from '@/lib/content';
 import CopyButton from './CopyButton';
-import { photoSrc } from '@/lib/photo';
 
 const K = 24; // kekakuan ayunan
 const C = 1.3; // redaman
@@ -212,7 +211,7 @@ export default function LanyardCard({ c }: { c: Content }) {
                   <div className="cphoto">
                     {c.photoId ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photoSrc(c.photoId)} alt={`Foto ${c.name}`} draggable={false} />
+                      <img src={`/api/photo/${c.photoId}`} alt={`Foto ${c.name}`} draggable={false} />
                     ) : (
                       <div className="initials" aria-hidden="true">
                         {initials(c.name)}

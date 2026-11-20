@@ -27,10 +27,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           <a href="/dashboard" className="btn sm">Kembali ke dashboard</a>
           <h1>{site.published ? 'Perpanjang langganan' : 'Bayar untuk menerbitkan situs'}</h1>
           <p className="sub">
-            Situs + Kartu Digital, {PRO.months} bulan, <s className="was">{rupiah(PRO.listAmount)}</s> <strong>{rupiah(PRO.amount)}</strong>. Setelah dibayar, {siteUrl(site.slug).replace(/^https?:\/\//, '')} langsung terbit. Punya voucher atau kode percobaan? Masukkan di bawah.
+            Situs + Kartu Digital, {PRO.months} bulan, {rupiah(PRO.amount)}. Setelah dibayar, {siteUrl(site.slug).replace(/^https?:\/\//, '')} langsung terbit. Punya voucher? Masukkan di bawah.
           </p>
           {midtransConfigured() ? (
-            <PayPanel price={PRO.amount} listPrice={PRO.listAmount} siteHref={siteUrl(site.slug)} initialVoucher={(v ?? '').slice(0, 30)} />
+            <PayPanel price={PRO.amount} siteHref={siteUrl(site.slug)} initialVoucher={(v ?? '').slice(0, 30)} />
           ) : (
             <p className="box" role="alert">Pembayaran belum dikonfigurasi di server (MIDTRANS_SERVER_KEY kosong).</p>
           )}

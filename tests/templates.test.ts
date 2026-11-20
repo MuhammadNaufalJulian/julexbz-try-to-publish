@@ -38,7 +38,7 @@ test('template: daftar UI cocok dengan daftar id dan punya palet OG untuk semuan
 test('template: palet OG template beraksen mengikuti tema, yang berpalet sendiri tidak', () => {
   assert.notEqual(ogPalette({ template: 'klasik', theme: 'rose' }).accent, ogPalette({ template: 'klasik', theme: 'emerald' }).accent);
   assert.notEqual(ogPalette({ template: 'cerah', theme: 'rose' }).accent, ogPalette({ template: 'cerah', theme: 'emerald' }).accent);
-  for (const id of ['pop', 'neon', 'gradasi', 'permen', 'stiker', 'arcade', 'boba', 'komik', 'awan'] as const) {
+  for (const id of ['pop', 'neon', 'gradasi'] as const) {
     assert.equal(ogPalette({ template: id, theme: 'rose' }).accent, ogPalette({ template: id, theme: 'emerald' }).accent, id);
     assert.equal(templateMeta(id).accentable, false);
   }
@@ -134,10 +134,4 @@ test('vcard: nama file aman', () => {
   assert.equal(vcardFilename('Budi-Santoso'), 'budi-santoso.vcf');
   assert.equal(vcardFilename('../../etc'), 'etc.vcf');
   assert.equal(vcardFilename(''), 'kontak.vcf');
-});
-
-import { PLANS } from '../src/lib/plans.ts';
-
-test('teks paket menyebut jumlah template yang benar', () => {
-  assert.ok(PLANS[0].points.some((p) => p.startsWith(`${TEMPLATE_IDS.length} template`)), 'jumlah template di plans.ts harus sama dengan TEMPLATE_IDS');
 });

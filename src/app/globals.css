@@ -171,8 +171,6 @@ h1.name{font:800 clamp(2.6rem,8.5vw,4.6rem)/1 var(--display);letter-spacing:-.03
 .plan.hl{border-color:var(--accent)}
 .plan h3{font:700 1.2rem var(--display);margin:0}
 .plan .price{font:500 1.6rem var(--display);margin:0}
-s.was{color:var(--muted);font-weight:400;text-decoration-thickness:2px}
-.plan .price s.was{font-size:.65em;margin-right:.25rem}
 .plan ul{margin:.4rem 0 0;padding-left:1.1rem;color:var(--muted)}
 .swatches{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
 .sw{width:2rem;height:2rem;border-radius:50%;border:2px solid var(--bg);box-shadow:0 0 0 1px var(--line)}

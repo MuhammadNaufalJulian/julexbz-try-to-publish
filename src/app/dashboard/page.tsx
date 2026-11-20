@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { MODE, ROOT_DOMAIN, siteUrl, isAdminEmail } from '@/lib/config';
+import { MODE, ROOT_DOMAIN, siteUrl } from '@/lib/config';
 import { getSiteByUserId } from '@/lib/sites';
 import Editor from '@/components/Editor';
 import ClaimSite from '@/components/ClaimSite';
@@ -27,7 +27,6 @@ export default async function Page() {
       email={user.email || ''}
       live={site.published}
       expiresAt={site.planExpiresAt}
-      admin={MODE !== 'single' && isAdminEmail(user.email)}
     />
   );
 }
