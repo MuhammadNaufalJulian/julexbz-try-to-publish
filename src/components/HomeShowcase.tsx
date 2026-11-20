@@ -5,13 +5,13 @@ import type { Content, TemplateId, ThemeId } from '@/lib/content';
 import { TEMPLATES, templateMeta } from '@/lib/templates';
 import { THEMES } from '@/lib/themes';
 import SiteView from './SiteView';
-import PromoPopup from './PromoPopup';
+import PromoPopup, { type PromoOffer } from './PromoPopup';
 
 const STEP_MS = 1000;
 
 // Beranda julexbz.com: situs pemilik yang berganti template tiap 1 detik supaya pengunjung melihat semua tampilan.
 // Klik template atau warna di popup menghentikan pergantian dan memakai pilihan itu di halaman ini (hanya di layar pengunjung, tidak disimpan).
-export default function HomeShowcase({ content, rootUrl, href, price, was }: { content: Content; rootUrl: string; href: string; price: string; was: string }) {
+export default function HomeShowcase({ content, rootUrl, href, price, was, promo }: { content: Content; rootUrl: string; href: string; price: string; was: string; promo: PromoOffer | null }) {
   const [tpl, setTpl] = useState<TemplateId>(content.template);
   const [theme, setTheme] = useState<ThemeId>(content.theme);
   const [auto, setAuto] = useState(true);
@@ -61,6 +61,7 @@ export default function HomeShowcase({ content, rootUrl, href, price, was }: { c
           href={href}
           price={price}
           was={was}
+          promo={promo}
           current={tpl}
           theme={theme}
           auto={auto}

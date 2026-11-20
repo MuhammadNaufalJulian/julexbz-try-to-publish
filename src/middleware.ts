@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { slugFromHost } from '@/lib/slug';
 
 // Halaman tambahan sebuah situs. Di mode single alamatnya langsung di domain utama.
-const EXTRA_PATHS = new Set(['/kartu', '/cv', '/kontak.vcf', '/og']);
+const EXTRA_PATHS = new Set(['/kartu', '/cv', '/kontak.vcf', '/og', '/sitemap.xml']);
 
 // Mengarahkan nama.domain.com ke halaman situs milik "nama". Tidak memakai database di sini (edge runtime).
 export function middleware(req: NextRequest) {

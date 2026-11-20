@@ -11,15 +11,16 @@ test('isi pemilik lolos validasi server (batas panjang, tautan, jumlah)', () => 
     assert.equal(r.value.name, 'Muhammad Naufal Julian');
     assert.equal(r.value.projects.length, 10);
     assert.equal(r.value.skills.length, 20);
-    assert.equal(r.value.contact.links.length, 6, 'semua tautan lolos safeUrl');
+    assert.equal(r.value.contact.links.length, 5, 'semua tautan lolos safeUrl');
+    assert.equal(r.value.education.length, 3);
     assert.equal(r.value.experience.length, 2);
   }
 });
 
-test('isi pemilik: tidak ada data yang tidak pasti dan batas jumlah dipatuhi', () => {
+test('isi pemilik: kota tetap kosong dan batas jumlah dipatuhi', () => {
   const c = ownerContent();
-  assert.equal(c.contact.email, '');
-  assert.equal(c.contact.phone, '');
+  assert.match(c.contact.email, /^[^@\s]+@[^@\s]+\.[a-z]+$/);
+  assert.match(c.contact.phone, /^\+62/);
   assert.equal(c.card.city, '');
   assert.ok(c.projects.length <= LIMITS.projects && c.skills.length <= LIMITS.skills && c.experience.length <= LIMITS.experience);
   assert.match(buildVcard(c, 'https://julexbz.com'), /FN:Muhammad Naufal Julian/);

@@ -16,7 +16,7 @@ type Row = { id: string; user_id: string; slug: string; plan: string; published:
 // Paket yang sudah lewat masa berlaku dianggap kembali ke gratis. Situs berbayar yang kedaluwarsa lebih dari 3 hari
 // (masa tenggang) berhenti tampil sampai diperpanjang. Situs tanpa tanggal kedaluwarsa tidak terpengaruh.
 const COLS = `id, user_id, slug, content, plan_expires_at,
-  (published and (plan_expires_at is null or plan_expires_at + interval '3 days' >= now())) as published,
+  (published and (plan_expires_at is null or plan_expires_at + (case when plan = 'trial' then interval '0' else interval '3 days' end) >= now())) as published,
   case when plan_expires_at is not null and plan_expires_at < now() then 'free' else plan end as plan`;
 
 function toSite(r: Row): Site {
@@ -87,4 +87,13 @@ export async function getPhoto(id: string): Promise<{ mime: string; data: string
 export async function photoBelongsTo(photoId: string, siteId: string): Promise<boolean> {
   const rows = await q('select 1 from photos where id = $1 and site_id = $2', [photoId, siteId]);
   return rows.length > 0;
+}
+
+// Alamat semua situs yang sedang tampil, untuk sitemap pusat. Aturan "tampil" sama dengan COLS di atas.
+export async function listPublishedSlugs(limit = 5000): Promise<string[]> {
+  const rows = await q<{ slug: string }>(
+    `select slug from sites where published and (plan_expires_at is null or plan_expires_at + (case when plan = 'trial' then interval '0' else interval '3 days' end) >= now()) order by created_at asc limit $1`,
+    [limit],
+  );
+  return rows.map((r) => r.slug);
 }

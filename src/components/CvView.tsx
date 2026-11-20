@@ -1,4 +1,5 @@
 import { safeUrl, type Content, type CvStyle } from '@/lib/content';
+import { photoSrc } from '@/lib/photo';
 
 // Tampilan ringkas dari alamat tautan: "github.com/budi" bukan "https://github.com/budi/".
 function shortUrl(u: string): string {
@@ -152,7 +153,7 @@ function Sheet({ children }: { children: React.ReactNode }) {
 export default function CvView({ c, style }: { c: Content; style: CvStyle }) {
   const photo = c.cv.showPhoto && c.photoId ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className="cv-photo" src={`/api/photo/${c.photoId}`} alt={`Foto ${c.name}`} />
+    <img className="cv-photo" src={photoSrc(c.photoId)} alt={`Foto ${c.name}`} />
   ) : null;
 
   if (style === 'modern') {

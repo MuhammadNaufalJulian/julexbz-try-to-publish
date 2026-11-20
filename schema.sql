@@ -104,6 +104,27 @@ create table if not exists vouchers (
   note text,
   created_at timestamptz not null default now(),
   constraint vouchers_code_fmt check (code ~ '^[A-Z0-9_-]{3,30}$'),
-  constraint vouchers_kind_chk check (kind in ('percent', 'fixed')),
-  constraint vouchers_value_chk check (value > 0 and (kind <> 'percent' or value <= 100))
+  constraint vouchers_kind_chk check (kind in ('percent', 'fixed', 'trial')),
+  constraint vouchers_value_chk check (value > 0 and (kind <> 'percent' or value <= 100) and (kind <> 'trial' or value <= 90))
 );
+
+-- split
+
+alter table vouchers drop constraint if exists vouchers_kind_chk;
+
+-- split
+
+alter table vouchers add constraint vouchers_kind_chk check (kind in ('percent', 'fixed', 'trial'));
+
+-- split
+
+alter table vouchers drop constraint if exists vouchers_value_chk;
+
+-- split
+
+alter table vouchers add constraint vouchers_value_chk check (value > 0 and (kind <> 'percent' or value <= 100) and (kind <> 'trial' or value <= 90));
+
+-- split
+
+-- Voucher unggulan: satu voucher yang tampil di popup beranda. Dipilih admin di /admin/voucher.
+alter table vouchers add column if not exists featured boolean not null default false;

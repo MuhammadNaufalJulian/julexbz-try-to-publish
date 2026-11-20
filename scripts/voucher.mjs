@@ -2,6 +2,7 @@
 // Pakai (dari folder proyek, DATABASE_URL ada di .env):
 //   node --env-file=.env scripts/voucher.mjs buat PROMO20 persen 20 [maks_pakai] [hari_berlaku]
 //   node --env-file=.env scripts/voucher.mjs buat HEMAT50K rupiah 50000 100 30
+//   node --env-file=.env scripts/voucher.mjs buat TRIAL7 trial 7 [maks_pakai] [hari_berlaku]   (percobaan gratis 7 hari, lalu harus bayar)
 //   node --env-file=.env scripts/voucher.mjs daftar
 //   node --env-file=.env scripts/voucher.mjs matikan PROMO20
 //   node --env-file=.env scripts/voucher.mjs nyalakan PROMO20
@@ -22,14 +23,15 @@ function bad(msg) {
 
 if (cmd === 'buat') {
   const code = String(a[0] ?? '').trim().toUpperCase();
-  const kind = { persen: 'percent', rupiah: 'fixed' }[a[1]];
+  const kind = { persen: 'percent', rupiah: 'fixed', trial: 'trial' }[a[1]];
   const value = Number(a[2]);
   const max = a[3] ? Number(a[3]) : null;
   const days = a[4] ? Number(a[4]) : null;
   if (!/^[A-Z0-9_-]{3,30}$/.test(code)) bad('Kode: 3-30 karakter, huruf besar/angka/-/_. Contoh: PROMO20');
-  if (!kind) bad('Jenis harus "persen" atau "rupiah".');
+  if (!kind) bad('Jenis harus "persen", "rupiah", atau "trial".');
   if (!Number.isInteger(value) || value < 1) bad('Nilai harus bilangan bulat positif.');
   if (kind === 'percent' && value > 100) bad('Persen maksimal 100.');
+  if (kind === 'trial' && value > 90) bad('Percobaan maksimal 90 hari.');
   if (max !== null && (!Number.isInteger(max) || max < 1)) bad('maks_pakai harus bilangan bulat positif.');
   if (days !== null && (!Number.isInteger(days) || days < 1)) bad('hari_berlaku harus bilangan bulat positif.');
   try {
@@ -41,12 +43,12 @@ if (cmd === 'buat') {
     if (e && e.code === '23505') bad(`Kode ${code} sudah ada.`);
     throw e;
   }
-  console.log(`Voucher ${code} dibuat: ${kind === 'percent' ? value + '%' : 'Rp ' + value.toLocaleString('id-ID')}${max ? `, maks ${max}x` : ''}${days ? `, berlaku ${days} hari` : ''}.`);
+  console.log(`Voucher ${code} dibuat: ${kind === 'percent' ? value + '%' : kind === 'trial' ? 'percobaan ' + value + ' hari' : 'Rp ' + value.toLocaleString('id-ID')}${max ? `, maks ${max}x` : ''}${days ? `, berlaku ${days} hari` : ''}.`);
 } else if (cmd === 'daftar') {
   const rows = await sql.query(`select code, kind, value, used, max_uses, expires_at, active from vouchers order by created_at desc`);
   if (!rows.length) console.log('Belum ada voucher.');
   for (const r of rows) {
-    const val = r.kind === 'percent' ? r.value + '%' : 'Rp ' + r.value.toLocaleString('id-ID');
+    const val = r.kind === 'percent' ? r.value + '%' : r.kind === 'trial' ? r.value + ' hr trial' : 'Rp ' + r.value.toLocaleString('id-ID');
     const exp = r.expires_at ? new Date(r.expires_at).toLocaleDateString('id-ID') : 'tanpa batas';
     console.log(`${r.code.padEnd(16)} ${val.padEnd(12)} terpakai ${r.used}${r.max_uses ? '/' + r.max_uses : ''}  berlaku s/d ${exp}  ${r.active ? 'aktif' : 'MATI'}`);
   }

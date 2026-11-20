@@ -207,7 +207,8 @@ PREPARE o_settle AS
     update vouchers set used = used + 1 where code = (select voucher_code from o) returning 1
   )
   update sites s set plan = o.plan, published = true,
-    plan_expires_at = greatest(coalesce(s.plan_expires_at, now()), now()) + make_interval(months => $2),
+    plan_expires_at = case when o.plan = 'trial' then now() + make_interval(days => $3)
+      else greatest(coalesce(s.plan_expires_at, now()), now()) + make_interval(months => $2) end,
     updated_at = now()
   from o where s.id = o.site_id
   returning s.id;
@@ -223,7 +224,7 @@ update orders set created_at = now() - interval '11 minutes' where id = 'JX-TEST
 select chk('pesanan menunggu yang lama tidak dipakai ulang', (select count(*) from orders where user_id = :'a_id' and status = 'pending' and created_at > now() - make_interval(mins => 10)) = 0);
 
 -- lunas: situs terbit dan masa aktif 12 bulan
-EXECUTE o_settle('JX-TEST-1', 12);
+EXECUTE o_settle('JX-TEST-1', 12, 0);
 select chk('settle menerbitkan situs dan mengaktifkan pro',
   (select published and plan = 'pro' from sites where id = :'site_a'));
 select chk('settle: masa aktif sekitar 12 bulan dari sekarang',
@@ -232,19 +233,19 @@ select chk('settle: pesanan berstatus paid dan paid_at terisi', (select status =
 select plan_expires_at as exp1 from sites where id = :'site_a' \gset
 
 -- panggilan kedua (webhook dan polling bersamaan) tidak menambah masa aktif
-EXECUTE o_settle('JX-TEST-1', 12);
+EXECUTE o_settle('JX-TEST-1', 12, 0);
 select chk('settle dua kali: masa aktif tidak bertambah', (select plan_expires_at = :'exp1'::timestamptz from sites where id = :'site_a'));
 
 -- perpanjangan saat masih aktif menambah dari tanggal berakhir yang lama
 EXECUTE o_create('JX-TEST-2', :'a_id', :'site_a', 'pro', 299000);
-EXECUTE o_settle('JX-TEST-2', 12);
+EXECUTE o_settle('JX-TEST-2', 12, 0);
 select chk('perpanjangan menambah 12 bulan dari tanggal berakhir lama',
   (select plan_expires_at = :'exp1'::timestamptz + interval '12 months' from sites where id = :'site_a'));
 
 -- perpanjangan setelah kedaluwarsa dihitung dari sekarang
 update sites set plan_expires_at = now() - interval '10 days', published = false where id = :'site_a';
 EXECUTE o_create('JX-TEST-3', :'a_id', :'site_a', 'pro', 299000);
-EXECUTE o_settle('JX-TEST-3', 12);
+EXECUTE o_settle('JX-TEST-3', 12, 0);
 select chk('perpanjangan setelah kedaluwarsa: terbit lagi, 12 bulan dari sekarang',
   (select published and plan_expires_at between now() + interval '12 months' - interval '1 minute' and now() + interval '12 months' + interval '1 minute' from sites where id = :'site_a'));
 
@@ -257,7 +258,7 @@ select chk('pesanan lunas tidak bisa diturunkan jadi expired', (select status fr
 
 -- pesanan tak dikenal tidak menerbitkan apa pun
 update sites set published = false where id = :'site_a';
-EXECUTE o_settle('TIDAK-ADA', 12);
+EXECUTE o_settle('TIDAK-ADA', 12, 0);
 select chk('settle pesanan tak dikenal tidak mengubah situs', (select not published from sites where id = :'site_a'));
 
 -- nominal wajib positif
@@ -295,23 +296,54 @@ select chk('voucher tidak sah ditolak (huruf kecil, >100%, nol, jenis aneh, dobe
 EXECUTE o_create_v('JX-V-1', :'a_id', :'site_a', 'pro', 239200, 'PROMO20', 59800);
 EXECUTE v_user_used(:'a_id', 'PROMO20');
 select chk('voucher belum dihitung dipakai sebelum lunas', (select used from vouchers where code = 'PROMO20') = 0 and not exists (select 1 from orders where user_id = :'a_id' and voucher_code = 'PROMO20' and status = 'paid'));
-EXECUTE o_settle('JX-V-1', 12);
+EXECUTE o_settle('JX-V-1', 12, 0);
 select chk('lunas menambah pemakaian voucher satu kali', (select used from vouchers where code = 'PROMO20') = 1);
-EXECUTE o_settle('JX-V-1', 12);
+EXECUTE o_settle('JX-V-1', 12, 0);
 select chk('settle ulang tidak menambah pemakaian lagi', (select used from vouchers where code = 'PROMO20') = 1);
 select chk('pengguna tercatat sudah memakai voucher', exists (select 1 from orders where user_id = :'a_id' and voucher_code = 'PROMO20' and status = 'paid'));
 select chk('pengguna lain belum memakai voucher', not exists (select 1 from orders where user_id = :'b_id' and voucher_code = 'PROMO20' and status = 'paid'));
 
 -- pesanan gratis (voucher 100%) boleh bernominal 0
 EXECUTE o_create_v('JX-V-2', :'b_id', :'site_b', 'pro', 0, 'PROMO20', 299000);
-EXECUTE o_settle('JX-V-2', 12);
+EXECUTE o_settle('JX-V-2', 12, 0);
 select chk('pesanan nominal 0 diterima dan menerbitkan situs', (select published and plan = 'pro' from sites where id = :'site_b'));
 select chk('pemakaian voucher mencapai batas', (select used = max_uses from vouchers where code = 'PROMO20'));
 
 -- pesanan tanpa voucher tidak menyentuh tabel voucher
 EXECUTE o_create('JX-V-3', :'b_id', :'site_b', 'pro', 299000);
-EXECUTE o_settle('JX-V-3', 12);
+EXECUTE o_settle('JX-V-3', 12, 0);
 select chk('pesanan tanpa voucher tidak mengubah voucher', (select used from vouchers where code = 'PROMO20') = 2);
+
+-- ---------- voucher percobaan ----------
+insert into vouchers (code, kind, value) values ('TRIAL7', 'trial', 7);
+\o /dev/null
+\set ON_ERROR_STOP 0
+insert into vouchers (code, kind, value) values ('TRIAL91', 'trial', 91);
+insert into vouchers (code, kind, value) values ('TRIAL0', 'trial', 0);
+\set ON_ERROR_STOP 1
+\o
+select chk('voucher trial di atas 90 hari atau nol ditolak', (select count(*) from vouchers where code like 'TRIAL%') = 1);
+
+update sites set plan = 'free', plan_expires_at = null, published = false where id = :'site_b';
+EXECUTE o_create_v('JX-T-1', :'b_id', :'site_b', 'trial', 0, 'TRIAL7', 0);
+EXECUTE o_settle('JX-T-1', 12, 7);
+select chk('percobaan: situs terbit dengan paket trial', (select published and plan = 'trial' from sites where id = :'site_b'));
+select chk('percobaan: masa aktif 7 hari (bukan 12 bulan)', (select plan_expires_at between now() + interval '7 days' - interval '1 minute' and now() + interval '7 days' + interval '1 minute' from sites where id = :'site_b'));
+select chk('percobaan: pemakaian voucher bertambah', (select used from vouchers where code = 'TRIAL7') = 1);
+EXECUTE o_settle('JX-T-1', 12, 7);
+select chk('percobaan: settle ulang tidak memperpanjang', (select used from vouchers where code = 'TRIAL7') = 1);
+
+-- tanpa masa tenggang: begitu percobaan habis, situs tidak tampil
+update sites set plan_expires_at = now() - interval '1 minute' where id = :'site_b';
+select chk('percobaan habis: langsung tidak tampil dan paket jadi free',
+  (select not (published and (plan_expires_at is null or plan_expires_at + (case when plan = 'trial' then interval '0' else interval '3 days' end) >= now())) from sites where id = :'site_b'));
+-- paket pro yang baru habis masih punya masa tenggang 3 hari
+update sites set plan = 'pro', plan_expires_at = now() - interval '1 day' where id = :'site_b';
+select chk('pro baru habis: masih tampil (masa tenggang 3 hari)',
+  (select published and (plan_expires_at is null or plan_expires_at + (case when plan = 'trial' then interval '0' else interval '3 days' end) >= now()) from sites where id = :'site_b'));
+
+-- sudah pernah percobaan: terdeteksi lewat pesanan trial yang lunas
+select chk('pengguna tercatat sudah memakai percobaan', exists (select 1 from orders where user_id = :'b_id' and plan = 'trial' and status = 'paid'));
 
 -- ---------- cascade ----------
 delete from users where id = :'a_id';
@@ -320,3 +352,11 @@ select chk('hapus user menghapus situs, foto, dan pesanannya',
 select chk('data user lain tetap utuh', exists (select 1 from sites where user_id = :'b_id') and exists (select 1 from photos where id = :'pb_id'));
 
 \echo SEMUA TES DB LOLOS
+
+-- voucher unggulan: satu saja
+insert into vouchers (code, kind, value) values ('FEAT1', 'trial', 7), ('FEAT2', 'percent', 50);
+update vouchers set featured = (code = 'FEAT1') where (featured or code = 'FEAT1') and exists (select 1 from vouchers where code = 'FEAT1' and active);
+update vouchers set featured = (code = 'FEAT2') where (featured or code = 'FEAT2') and exists (select 1 from vouchers where code = 'FEAT2' and active);
+select chk('hanya satu voucher unggulan, yang terakhir dipilih', (select count(*) from vouchers where featured) = 1 and (select featured from vouchers where code = 'FEAT2'));
+update vouchers set featured = (code = 'NOPE') where (featured or code = 'NOPE') and exists (select 1 from vouchers where code = 'NOPE' and active);
+select chk('memilih kode yang tidak ada tidak mengubah unggulan', (select featured from vouchers where code = 'FEAT2'));

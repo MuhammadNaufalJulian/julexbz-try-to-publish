@@ -6,6 +6,7 @@ import { newOrderId } from '@/lib/pay';
 import { chargeQris, midtransConfigured } from '@/lib/midtrans';
 import { createOrder, latestPendingOrder, markStatus, setQr, settleOrder, syncOrder } from '@/lib/orders';
 import { quote } from '@/lib/vouchers';
+import { TRIAL } from '@/lib/plans';
 import { isLimited, recordAttempt } from '@/lib/ratelimit';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +35,15 @@ export async function POST(req: Request) {
   // Pesanan menunggu yang masih baru dipakai ulang. Kalau ternyata sudah dibayar, langsung beri tahu.
   const qt = await quote(userId, body.voucher);
   if (!qt.ok) return fail(qt.error, 400);
+
+  // Voucher percobaan: situs terbit gratis selama sekian hari tanpa Midtrans. Setelah itu harus bayar.
+  if (qt.trialDays) {
+    await recordAttempt(key);
+    const trialId = newOrderId();
+    await createOrder(trialId, userId, site.id, 0, qt.code, 0, TRIAL.id);
+    await settleOrder(trialId, qt.trialDays);
+    return NextResponse.json({ ok: true, status: 'paid', orderId: trialId, amount: 0, qrUrl: null, trialDays: qt.trialDays });
+  }
 
   // Dipakai ulang hanya kalau voucher-nya sama (atau tidak diminta lain), supaya harga yang tampil tidak berubah diam-diam.
   const existing = await latestPendingOrder(userId);

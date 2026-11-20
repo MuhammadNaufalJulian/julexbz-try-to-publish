@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 type Kind = 'percent' | 'fixed' | 'trial';
-type Row = { code: string; kind: Kind; value: number; used: number; maxUses: number | null; expiresAt: string | null; active: boolean; note: string | null };
+type Row = { code: string; kind: Kind; value: number; used: number; maxUses: number | null; expiresAt: string | null; active: boolean; note: string | null; featured: boolean };
 type Form = { kind: Kind; value: string; count: string; prefix: string; code: string; maxUses: string; validDays: string; note: string };
 
 const rp = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
@@ -81,6 +81,15 @@ export default function VoucherAdmin({ price, rootUrl }: { price: number; rootUr
     const res = await fetch('/api/admin/voucher', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: r.code, active: !r.active }) });
     if (res.ok) load();
     else setMsg('Gagal mengubah status.');
+  }
+
+  async function feature(r: Row) {
+    const res = await fetch('/api/admin/voucher', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: r.code, featured: !r.featured }) });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMsg('');
+      load();
+    } else setMsg(d.error || 'Gagal mengubah voucher unggulan.');
   }
 
   const v = Number(f.value);
@@ -170,6 +179,8 @@ export default function VoucherAdmin({ price, rootUrl }: { price: number; rootUr
 
       <section aria-label="Daftar voucher">
         <h2>Semua voucher</h2>
+        <p className="note">Tombol <strong>Tampilkan di popup</strong> memilih satu voucher untuk ditawarkan di beranda, 3 detik setelah web dibuka. Kodenya jadi publik, jadi pilih voucher percobaan atau diskon yang memang untuk umum, jangan yang rahasia. Hanya satu yang bisa tampil.</p>
+        {msg ? <p role="alert">{msg}</p> : null}
         {rows.length === 0 ? <p className="note">Belum ada voucher.</p> : null}
         <ul className="vlist">
           {rows.map((r) => {
@@ -184,7 +195,9 @@ export default function VoucherAdmin({ price, rootUrl }: { price: number; rootUr
                 <span>{r.expiresAt ? `s/d ${new Date(r.expiresAt).toLocaleDateString('id-ID')}` : 'tanpa batas waktu'}</span>
                 {r.note ? <span className="note">{r.note}</span> : null}
                 <strong>{state}</strong>
+                {r.featured ? <span className="vfeat">tampil di popup</span> : null}
                 <button type="button" className="btn sm" onClick={() => copy(link(r.code), 'r' + r.code)}>{copied === 'r' + r.code ? 'Tersalin' : 'Salin tautan'}</button>
+                {r.active ? <button type="button" className="btn sm" aria-pressed={r.featured} onClick={() => feature(r)}>{r.featured ? 'Hentikan di popup' : 'Tampilkan di popup'}</button> : null}
                 <button type="button" className="btn sm" onClick={() => toggle(r)}>{r.active ? 'Matikan' : 'Nyalakan'}</button>
               </li>
             );

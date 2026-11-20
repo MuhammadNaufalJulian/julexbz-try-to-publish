@@ -18,5 +18,5 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as { voucher?: unknown };
   const qt = await quote(userId, body.voucher);
   if (!qt.ok) return NextResponse.json({ ok: false, error: qt.error }, { status: 400 });
-  return NextResponse.json({ ok: true, code: qt.code, price: qt.price, discount: qt.discount, final: qt.final });
+  return NextResponse.json({ ok: true, code: qt.code, price: qt.price, discount: qt.discount, final: qt.final, trialDays: qt.trialDays });
 }

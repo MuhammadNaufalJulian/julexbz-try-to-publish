@@ -2,19 +2,19 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-type Props = { price: number; siteHref: string; initialVoucher: string };
+type Props = { price: number; listPrice: number; siteHref: string; initialVoucher: string };
 type View =
   | { kind: 'form' }
   | { kind: 'loading' }
   | { kind: 'qr'; orderId: string; qrUrl: string; amount: number }
-  | { kind: 'paid' }
+  | { kind: 'paid'; trialDays?: number }
   | { kind: 'expired' }
   | { kind: 'error'; msg: string };
-type Applied = { code: string; discount: number; final: number };
+type Applied = { code: string; discount: number; final: number; trialDays: number | null };
 
 const rp = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
 
-export default function PayPanel({ price, siteHref, initialVoucher }: Props) {
+export default function PayPanel({ price, listPrice, siteHref, initialVoucher }: Props) {
   const [v, setV] = useState<View>({ kind: 'form' });
   const [code, setCode] = useState(initialVoucher);
   const [applied, setApplied] = useState<Applied | null>(null);
@@ -22,7 +22,8 @@ export default function PayPanel({ price, siteHref, initialVoucher }: Props) {
   const [checking, setChecking] = useState(false);
   const auto = useRef(false);
 
-  const total = applied ? applied.final : price;
+  const trial = applied?.trialDays ?? null;
+  const total = trial ? 0 : applied ? applied.final : price;
 
   const apply = useCallback(async (raw: string) => {
     const c = raw.trim();
@@ -40,7 +41,7 @@ export default function PayPanel({ price, siteHref, initialVoucher }: Props) {
         setApplied(null);
         setVmsg(d.error || 'Voucher gagal dicek.');
       } else {
-        setApplied({ code: d.code, discount: d.discount, final: d.final });
+        setApplied({ code: d.code, discount: d.discount, final: d.final, trialDays: d.trialDays ?? null });
         setVmsg('');
       }
     } catch {
@@ -63,7 +64,7 @@ export default function PayPanel({ price, siteHref, initialVoucher }: Props) {
       const res = await fetch('/api/pay/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ voucher }) });
       const d = await res.json().catch(() => ({}));
       if (!res.ok || !d.ok) return setV({ kind: 'error', msg: d.error || 'Gagal membuat kode bayar.' });
-      if (d.status === 'paid') return setV({ kind: 'paid' });
+      if (d.status === 'paid') return setV({ kind: 'paid', trialDays: d.trialDays });
       setV({ kind: 'qr', orderId: d.orderId, qrUrl: d.qrUrl, amount: d.amount });
     } catch {
       setV({ kind: 'error', msg: 'Tidak ada koneksi. Coba lagi.' });
@@ -96,8 +97,9 @@ export default function PayPanel({ price, siteHref, initialVoucher }: Props) {
   if (v.kind === 'paid') {
     return (
       <div className="box payok" role="status">
-        <h2>{total === 0 ? 'Voucher berhasil dipakai' : 'Pembayaran berhasil'}</h2>
+        <h2>{v.trialDays ? `Percobaan ${v.trialDays} hari dimulai` : total === 0 ? 'Voucher berhasil dipakai' : 'Pembayaran berhasil'}</h2>
         <p>Situsmu sudah terbit dan bisa dibuka siapa saja.</p>
+        {v.trialDays ? <p className="note">Setelah {v.trialDays} hari situs berhenti tampil. Bayar kapan saja dari dashboard untuk melanjutkan.</p> : null}
         <p className="linkrow"><code>{siteHref}</code></p>
         <div className="cta">
           <a className="btn primary lg" href={siteHref} target="_blank" rel="noopener noreferrer">Buka situs</a>
@@ -139,12 +141,16 @@ export default function PayPanel({ price, siteHref, initialVoucher }: Props) {
         {vmsg ? <p className="note" role="alert">{vmsg}</p> : null}
       </div>
       <dl className="paysum">
+        {listPrice > price ? <div><dt>Harga normal</dt><dd><s className="was">{rp(listPrice)}</s></dd></div> : null}
+        {listPrice > price ? <div><dt>Diskon promo</dt><dd>-{rp(listPrice - price)}</dd></div> : null}
         <div><dt>Harga</dt><dd>{rp(price)}</dd></div>
-        {applied ? <div><dt>Diskon ({applied.code})</dt><dd>-{rp(applied.discount)}</dd></div> : null}
-        <div className="tot"><dt>Total</dt><dd>{rp(total)}</dd></div>
+        {applied && !trial ? <div><dt>Diskon ({applied.code})</dt><dd>-{rp(applied.discount)}</dd></div> : null}
+        {trial ? <div><dt>Percobaan gratis ({applied!.code})</dt><dd>{trial} hari</dd></div> : null}
+        <div className="tot"><dt>{trial ? 'Bayar hari ini' : 'Total'}</dt><dd>{rp(total)}</dd></div>
       </dl>
+      {trial ? <p className="note">Setelah {trial} hari situs berhenti tampil kecuali kamu melanjutkan dengan {rp(price)} per tahun.</p> : null}
       <button type="button" className="btn primary lg" disabled={checking || (!!code.trim() && !applied)} onClick={() => create(applied ? applied.code : null)}>
-        {total === 0 ? 'Terbitkan situs' : 'Lanjut bayar dengan QRIS'}
+        {trial ? `Mulai percobaan ${trial} hari` : total === 0 ? 'Terbitkan situs' : 'Lanjut bayar dengan QRIS'}
       </button>
       {code.trim() && !applied ? <p className="note">Tekan Terapkan dulu, atau kosongkan kode untuk membayar harga penuh.</p> : null}
     </div>

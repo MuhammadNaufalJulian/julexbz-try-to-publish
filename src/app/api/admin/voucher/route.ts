@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+import { q } from '@/lib/db';
 import { auth } from '@/auth';
 import { isAdminEmail } from '@/lib/config';
 import { normalizeCode, parseNewVoucher } from '@/lib/voucher';
-import { createVouchers, listVouchers, setVoucherActive } from '@/lib/vouchers';
+import { createVouchers, listVouchers, setFeatured, setVoucherActive } from '@/lib/vouchers';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,13 +33,19 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, codes: res.codes });
 }
 
-// Nyalakan atau matikan voucher.
+// Nyalakan/matikan voucher, atau pilih voucher unggulan untuk popup beranda ({ code, featured: true|false }).
 export async function PATCH(req: Request) {
   if (!(await admin())) return notFound();
   if (!isJson(req)) return NextResponse.json({ ok: false, error: 'Format tidak valid.' }, { status: 415 });
-  const body = (await req.json().catch(() => ({}))) as { code?: unknown; active?: unknown };
+  const body = (await req.json().catch(() => ({}))) as { code?: unknown; active?: unknown; featured?: unknown };
   const code = normalizeCode(body.code);
-  if (!code || typeof body.active !== 'boolean') return NextResponse.json({ ok: false, error: 'Permintaan tidak valid.' }, { status: 400 });
+  if (!code) return NextResponse.json({ ok: false, error: 'Permintaan tidak valid.' }, { status: 400 });
+  if (typeof body.featured === 'boolean') {
+    const ok = await setFeatured(body.featured ? code : null);
+    return ok ? NextResponse.json({ ok: true }) : NextResponse.json({ ok: false, error: 'Voucher tidak ditemukan atau sedang mati.' }, { status: 404 });
+  }
+  if (typeof body.active !== 'boolean') return NextResponse.json({ ok: false, error: 'Permintaan tidak valid.' }, { status: 400 });
   const ok = await setVoucherActive(code, body.active);
+  if (ok && !body.active) await q('update vouchers set featured = false where code = $1', [code]);
   return ok ? NextResponse.json({ ok: true }) : NextResponse.json({ ok: false, error: 'Voucher tidak ditemukan.' }, { status: 404 });
 }

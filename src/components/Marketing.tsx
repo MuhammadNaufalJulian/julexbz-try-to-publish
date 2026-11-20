@@ -53,7 +53,7 @@ export default function Marketing() {
               {PLANS.map((p) => (
                 <div key={p.id} className="plan hl">
                   <h3>{p.name}</h3>
-                  <p className="price">{p.price}</p>
+                  <p className="price"><s className="was">{p.was}</s> {p.price}</p>
                   <ul>
                     {p.points.map((x) => (
                       <li key={x}>{x}</li>

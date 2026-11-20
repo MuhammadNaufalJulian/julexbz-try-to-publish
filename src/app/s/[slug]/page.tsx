@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getSiteForSlug, HOME_KEY, rootUrl } from '@/lib/home';
-import { shareMetadata } from '@/lib/meta';
+import { shareMetadata, personJsonLd } from '@/lib/meta';
+import { siteUrl } from '@/lib/config';
 import SiteView from '@/components/SiteView';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,12 @@ export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
 export default async function Page({ params }: Ctx) {
   const { slug } = await params;
   const site = await getSiteForSlug(slug);
-  if (!site || !site.published) notFound();
-  return <SiteView content={site.content} plan={site.plan} rootUrl={process.env.NEXT_PUBLIC_ROOT_URL || '/'} />;
+  if (!site || !site.published) return notFound();
+  const url = slug === HOME_KEY ? rootUrl() : siteUrl(site.slug);
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd(site, url) }} />
+      <SiteView content={site.content} plan={site.plan} rootUrl={process.env.NEXT_PUBLIC_ROOT_URL || '/'} />
+    </>
+  );
 }

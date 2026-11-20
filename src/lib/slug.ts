@@ -4,7 +4,7 @@ export const RESERVED_SLUGS = new Set([
   'www', 'admin', 'api', 'app', 'dashboard', 'login', 'logout', 'signup', 'daftar', 'masuk',
   'mail', 'smtp', 'imap', 'pop', 'ftp', 'ns', 'ns1', 'ns2', 'static', 'assets', 'cdn', 'img',
   'help', 'support', 'bantuan', 'blog', 'docs', 'status', 'dev', 'test', 'staging', 'demo',
-  'root', 'julexbz', 'billing', 'pay', 'payment', 'auth', 'oauth', 'sites', 'site', 'web',
+  'root', 'julexbz', 'digibo', 'digiprod', 'billing', 'pay', 'payment', 'auth', 'oauth', 'sites', 'site', 'web',
   'about', 'contact', 'kontak', 'terms', 'privacy', 'pricing', 'harga', 'template', 'templates',
   'null', 'undefined', 'localhost', 'security', 'abuse', 'postmaster', 'webmaster', 'hostmaster',
 ]);
