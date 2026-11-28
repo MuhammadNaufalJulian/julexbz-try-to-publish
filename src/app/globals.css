@@ -210,3 +210,10 @@ s.was{color:var(--muted);font-weight:400;text-decoration-thickness:2px}
   .ed[data-view="preview"] .ed-edit{display:none}
   .ed-edit{border-right:0}
 }
+.legal{padding-block:2rem 3rem;line-height:1.65}
+.legal h1{margin:1.2rem 0 .2rem}
+.legal h2{font-size:1.1rem;margin:1.6rem 0 .3rem}
+.legal p{margin:.4rem 0}
+.legal-foot{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--line);font:400 .78rem var(--mono);color:var(--muted);display:flex;flex-direction:column;gap:.5rem}
+.legal-foot nav,.legal-foot p{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin:0}
+.legal-foot a{color:var(--muted);text-decoration:underline}

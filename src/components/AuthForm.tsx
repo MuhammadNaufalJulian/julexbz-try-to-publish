@@ -36,6 +36,7 @@ export default function AuthForm({ kind, google, canRegister }: { kind: 'login' 
           {!isLogin ? <p className="note">Minimal 8 karakter.</p> : <p className="note"><Link href="/lupa">Lupa password?</Link></p>}
         </div>
         {state?.error ? <p className="err" role="alert">{state.error}</p> : null}
+        {!isLogin ? <p className="note">Dengan mendaftar, kamu setuju dengan <Link href="/syarat">Syarat</Link> dan <Link href="/privasi">Kebijakan Privasi</Link>.</p> : null}
         <button type="submit" className="btn primary lg" disabled={pending}>
           {pending ? 'Memproses...' : isLogin ? 'Masuk' : 'Daftar'}
         </button>

@@ -35,3 +35,18 @@ export function isAdminEmail(email: string | null | undefined): boolean {
   if (!email) return false;
   return adminEmails().includes(email.trim().toLowerCase());
 }
+
+// Kontak bantuan yang tampil di footer dan halaman legal. Atur lewat env; kosong = tidak ditampilkan.
+// CONTACT_EMAIL contoh: halo@julexbz.com. CONTACT_WA hanya angka dengan kode negara, contoh: 6281234567890.
+export type Contact = { email: string | null; whatsapp: string | null; instagram: string | null };
+
+export function contactInfo(): Contact {
+  const email = (process.env.CONTACT_EMAIL || '').trim();
+  const wa = (process.env.CONTACT_WA || '').replace(/\D/g, '');
+  const ig = (process.env.CONTACT_IG ?? 'julexbz').trim().replace(/^@/, '');
+  return {
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null,
+    whatsapp: /^\d{8,15}$/.test(wa) ? wa : null,
+    instagram: /^[A-Za-z0-9._]{1,30}$/.test(ig) ? ig : null,
+  };
+}

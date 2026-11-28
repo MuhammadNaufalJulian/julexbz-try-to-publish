@@ -1,3 +1,4 @@
+import SiteFooter from './SiteFooter';
 import Link from 'next/link';
 import { ROOT_DOMAIN } from '@/lib/config';
 import { sampleContent } from '@/lib/content';
@@ -68,6 +69,7 @@ export default function Marketing() {
             <span>{'©'} julexbz.com</span>
             <Link href="/masuk">Masuk</Link>
           </footer>
+          <SiteFooter />
         </div>
       </div>
     </div>

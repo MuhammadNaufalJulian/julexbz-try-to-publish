@@ -6,6 +6,7 @@ import { MODE, siteUrl } from '@/lib/config';
 import { getSiteByUserId } from '@/lib/sites';
 import { PRO, rupiah } from '@/lib/plans';
 import { midtransConfigured } from '@/lib/midtrans';
+import SiteFooter from '@/components/SiteFooter';
 import PayPanel from '@/components/PayPanel';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           ) : (
             <p className="box" role="alert">Pembayaran belum dikonfigurasi di server (MIDTRANS_SERVER_KEY kosong).</p>
           )}
+          <SiteFooter label="Kendala pembayaran?" />
         </main>
       </div>
     </div>

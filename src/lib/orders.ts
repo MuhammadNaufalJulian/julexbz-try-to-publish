@@ -3,6 +3,7 @@ import { fetchStatus } from './midtrans';
 import { PRO } from './plans';
 import type { OrderStatus } from './pay';
 import { rewardReferral } from './referral';
+import { sendReceipt } from './receipt';
 
 export type Order = { id: string; userId: string; siteId: string; plan: string; amount: number; status: OrderStatus; qrUrl: string | null; voucherCode: string | null };
 
@@ -63,7 +64,10 @@ export const SETTLE_SQL = `
 // trialDays hanya dipakai pesanan berjenis trial. Pesanan lain mengabaikannya.
 export async function settleOrder(id: string, trialDays = 0): Promise<boolean> {
   const rows = await q(SETTLE_SQL, [id, PRO.months, trialDays]);
-  if (rows.length > 0) await rewardReferral(id);
+  if (rows.length > 0) {
+    await rewardReferral(id);
+    await sendReceipt(id); // aman: tidak pernah melempar error, dan hanya jalan sekali per pesanan
+  }
   return rows.length > 0;
 }
 

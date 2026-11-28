@@ -168,6 +168,12 @@ select id, amount, status, created_at, paid_at from orders order by created_at d
 
 Untuk pemilik: isi `FREE_EMAILS=emailmu@gmail.com` di environment. Situs baru dengan email itu langsung terbit tanpa bayar.
 
+## Halaman legal, kontak bantuan, dan bukti bayar
+
+- `/privasi`, `/syarat`, `/refund`: isinya di `src/lib/legal.ts` (draf, baca ulang sebelum jualan; ubah `LEGAL_UPDATED` tiap revisi).
+- Kontak bantuan di footer (`SiteFooter`), halaman bayar, dan halaman legal. Env: `CONTACT_EMAIL`, `CONTACT_WA` (angka, contoh 6281234567890), `CONTACT_IG` (default `julexbz`). Yang kosong tidak ditampilkan.
+- Bukti bayar: email otomatis dari `settleOrder` (`src/lib/receipt.ts`), sekali per pesanan, hanya untuk pesanan berbayar (bukan trial/Rp0). Butuh `RESEND_API_KEY` dan `EMAIL_FROM`.
+
 ## Domain Cloudflare + Vercel (subdomain otomatis)
 
 Tujuan: setiap pelanggan baru langsung punya `nama.julexbz.com` tanpa kamu mengatur DNS satu per satu. Cukup satu wildcard.
